@@ -90,20 +90,5 @@
     <li><span>접속 시각</span><span id="time">-</span></li>
   </ul>
 </main>
-
-<script>
-  var js = document.getElementById("js");
-  js.className = "ok";
-  js.lastElementChild.textContent = "정상 동작";
-
-  document.getElementById("url").textContent = location.href;
-  document.getElementById("time").textContent = new Date().toLocaleString("ko-KR");
-
-  var n = 0;
-  document.getElementById("btn").addEventListener("click", function () {
-    n += 1;
-    document.getElementById("count").textContent = n + "회";
-  });
-</script>
 </body>
 </html>
