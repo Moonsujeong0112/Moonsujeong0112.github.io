@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Pages 테스트</title>
+<style>
+  :root {
+    --bg: #eef3f1;
+    --fg: #14201c;
+    --muted: #55655f;
+    --line: #c5d3cd;
+    --ok: #0f7a52;
+    --card: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101a17;
+      --fg: #e6f0ec;
+      --muted: #94a8a0;
+      --line: #2a3b35;
+      --ok: #4fd69c;
+      --card: #172421;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+  }
+  main { width: 100%; max-width: 560px; }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(2rem, 7vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+  .sub { margin: 0 0 32px; color: var(--muted); }
+  ul {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  li:last-child { border-bottom: 0; }
+  li span:last-child { color: var(--muted); text-align: right; word-break: break-all; }
+  li.ok span:first-child::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+  li.wait span:first-child::before { content: "… "; color: var(--muted); }
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 10px 18px;
+    color: var(--bg);
+    background: var(--fg);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button:focus-visible { outline: 3px solid var(--ok); outline-offset: 2px; }
+  #count { margin-left: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>배포가 정상입니다</h1>
+  <p class="sub">이 페이지가 보인다면 GitHub Pages 설정이 완료된 것입니다.</p>
+
+  <ul>
+    <li class="ok"><span>HTML 로드</span><span>index.html</span></li>
+    <li class="ok"><span>CSS 적용</span><span>다크 모드 자동 대응</span></li>
+    <li class="wait" id="js"><span>JavaScript 실행</span><span>확인 중</span></li>
+    <li><span>접속 주소</span><span id="url">-</span></li>
+    <li><span>접속 시각</span><span id="time">-</span></li>
+  </ul>
+
+  <button id="btn" type="button">클릭 테스트</button>
+  <span id="count">0회</span>
+</main>
+
+<script>
+  var js = document.getElementById("js");
+  js.className = "ok";
+  js.lastElementChild.textContent = "정상 동작";
+
+  document.getElementById("url").textContent = location.href;
+  document.getElementById("time").textContent = new Date().toLocaleString("ko-KR");
+
+  var n = 0;
+  document.getElementById("btn").addEventListener("click", function () {
+    n += 1;
+    document.getElementById("count").textContent = n + "회";
+  });
+</script>
+</body>
+</html>
