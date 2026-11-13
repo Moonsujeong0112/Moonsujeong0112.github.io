@@ -1,94 +1,276 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GitHub Pages 테스트</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>미니 아케이드</title>
 <style>
-  :root {
-    --bg: #eef3f1;
-    --fg: #14201c;
-    --muted: #55655f;
-    --line: #c5d3cd;
-    --ok: #0f7a52;
-    --card: #ffffff;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #101a17;
-      --fg: #e6f0ec;
-      --muted: #94a8a0;
-      --line: #2a3b35;
-      --ok: #4fd69c;
-      --card: #172421;
-    }
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
-    line-height: 1.6;
-  }
-  main { width: 100%; max-width: 560px; }
-  h1 {
-    margin: 0 0 8px;
-    font-size: clamp(2rem, 7vw, 3rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-  }
-  .sub { margin: 0 0 32px; color: var(--muted); }
-  ul {
-    list-style: none;
-    margin: 0 0 24px;
-    padding: 0;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-  }
-  li {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--line);
-  }
-  li:last-child { border-bottom: 0; }
-  li span:last-child { color: var(--muted); text-align: right; word-break: break-all; }
-  li.ok span:first-child::before { content: "✓ "; color: var(--ok); font-weight: 700; }
-  li.wait span:first-child::before { content: "… "; color: var(--muted); }
-  button {
-    font: inherit;
-    font-weight: 600;
-    padding: 10px 18px;
-    color: var(--bg);
-    background: var(--fg);
-    border: 0;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  button:focus-visible { outline: 3px solid var(--ok); outline-offset: 2px; }
-  #count { margin-left: 12px; color: var(--muted); }
+:root{--bg:#12143a;--panel:#1d2058;--line:#3a3f9a;--text:#f4f3ff;--sub:#a9abe0;--accent:#ffd166;--accent-ink:#2a2200}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;overflow:hidden}
+.screen{display:none;height:100%;width:100%}
+.screen.active{display:flex}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* 메인 */
+#hub{flex-direction:column;align-items:center;padding:max(32px,env(safe-area-inset-top)) 20px 32px;overflow-y:auto}
+#hub h1{font-size:clamp(34px,9vw,52px);font-weight:900;letter-spacing:-.03em;margin-top:6vh}
+#hub p.sub{color:var(--sub);margin:8px 0 32px}
+.cards{display:grid;gap:14px;width:100%;max-width:420px}
+.card{display:flex;align-items:center;gap:16px;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:16px}
+.card .thumb{flex:none;width:64px;height:64px;border-radius:12px;background:#0d0f2c;display:flex;flex-direction:column-reverse;align-items:center;padding:8px;gap:2px}
+.card .thumb i{display:block;height:9px;border-radius:2px}
+.card b{display:block;font-size:19px}
+.card span.d{color:var(--sub);font-size:14px}
+.card:not([disabled]):hover{border-color:var(--accent)}
+.card:not([disabled]):active{transform:scale(.98)}
+.card[disabled]{opacity:.45;cursor:default;border-style:dashed}
+
+/* 게임 */
+#game{align-items:center;justify-content:center;background:#0a0b24}
+#wrap{position:relative;height:min(100dvh,156vw);aspect-ratio:360/560;max-width:100vw;overflow:hidden;touch-action:manipulation;user-select:none}
+canvas{width:100%;height:100%;display:block}
+.ov{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:rgba(10,11,36,.82);text-align:center}
+.ov.on{display:flex}
+.ov h2{font-size:30px;font-weight:900;letter-spacing:-.02em}
+.ov .big{font-size:64px;font-weight:900;color:var(--accent);line-height:1}
+.ov small{color:var(--sub)}
+.btn{background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:14px;padding:13px 26px;min-width:190px;font-size:17px}
+.btn.ghost{background:transparent;color:var(--text);border:2px solid var(--line)}
+.btn:disabled{opacity:.5}
+input{font:inherit;width:100%;max-width:240px;text-align:center;padding:12px;border-radius:12px;border:2px solid var(--line);background:#0d0f2c;color:var(--text)}
+ol.rank{list-style:none;width:100%;max-width:290px;max-height:300px;overflow-y:auto;text-align:left}
+ol.rank li{display:flex;gap:10px;padding:8px 12px;border-radius:10px;font-variant-numeric:tabular-nums}
+ol.rank li:nth-child(odd){background:rgba(255,255,255,.05)}
+ol.rank li.me{background:var(--accent);color:var(--accent-ink);font-weight:800}
+ol.rank .n{width:26px;color:var(--sub)}
+ol.rank li.me .n{color:inherit}
+ol.rank .nick{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg{min-height:20px;font-size:14px;color:var(--sub)}
 </style>
 </head>
 <body>
-<main>
-  <h1>배포가 정상입니다</h1>
-  <p class="sub">이 페이지가 보인다면 GitHub Pages 설정이 완료된 것입니다.</p>
 
-  <ul>
-    <li class="ok"><span>HTML 로드</span><span>index.html</span></li>
-    <li class="ok"><span>CSS 적용</span><span>다크 모드 자동 대응</span></li>
-    <li class="wait" id="js"><span>JavaScript 실행</span><span>확인 중</span></li>
-    <li><span>접속 주소</span><span id="url">-</span></li>
-    <li><span>접속 시각</span><span id="time">-</span></li>
-  </ul>
-</main>
+<section id="hub" class="screen active">
+  <h1>미니 아케이드</h1>
+  <p class="sub">짧게 한 판, 계속 한 판 더</p>
+  <div class="cards">
+    <button class="card" id="goStack">
+      <div class="thumb"><i style="width:34px;background:hsl(200 70% 60%)"></i><i style="width:30px;background:hsl(160 70% 60%)"></i><i style="width:24px;background:hsl(50 80% 60%)"></i><i style="width:18px;background:hsl(10 80% 62%)"></i></div>
+      <div><b>스택 타워</b><span class="d">타이밍 맞춰 블록을 높이 쌓기</span></div>
+    </button>
+    <button class="card" disabled><div class="thumb"></div><div><b>준비 중</b><span class="d">다음 게임이 곧 추가돼요</span></div></button>
+  </div>
+</section>
+
+<section id="game" class="screen">
+  <div id="wrap">
+    <canvas id="cv"></canvas>
+    <div class="ov on" id="ovStart">
+      <h2>스택 타워</h2>
+      <small>화면을 누르거나 스페이스바로 블록을 내려요</small>
+      <button class="btn" id="btnStart">시작하기</button>
+      <button class="btn ghost" id="btnRank1">랭킹 보기</button>
+      <button class="btn ghost" id="btnHome1">메인으로</button>
+    </div>
+    <div class="ov" id="ovOver">
+      <small>게임 종료</small>
+      <div class="big" id="finalScore">0</div>
+      <small id="bestTxt"></small>
+      <input id="nick" maxlength="10" placeholder="닉네임 (최대 10자)" autocomplete="off">
+      <button class="btn" id="btnSubmit">랭킹 등록</button>
+      <div class="msg" id="submitMsg"></div>
+      <button class="btn ghost" id="btnRetry">다시 하기</button>
+      <button class="btn ghost" id="btnHome2">메인으로</button>
+    </div>
+    <div class="ov" id="ovRank">
+      <h2>스택 타워 랭킹</h2>
+      <ol class="rank" id="rankList"></ol>
+      <div class="msg" id="rankMsg"></div>
+      <button class="btn" id="btnRankBack">닫기</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ===== 설정 =====
+   SUPABASE_URL / SUPABASE_KEY 를 채우면 모든 플레이어가 함께 보는 랭킹이 켜져요.
+   비워두면 이 브라우저에만 저장되는 로컬 랭킹으로 동작해요. */
+const CONFIG={SUPABASE_URL:'',SUPABASE_KEY:'',TABLE:'scores',GAME:'stack'};
+
+/* ===== 랭킹 ===== */
+const Rank={
+  remote(){return !!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_KEY)},
+  headers(){return{apikey:CONFIG.SUPABASE_KEY,Authorization:'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json'}},
+  async list(){
+    if(this.remote()){
+      const u=`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLE}?select=nickname,score&game=eq.${CONFIG.GAME}&order=score.desc,created_at.asc&limit=20`;
+      const r=await fetch(u,{headers:this.headers()});
+      if(!r.ok)throw new Error('list');
+      return r.json();
+    }
+    try{return JSON.parse(localStorage.getItem('rank_'+CONFIG.GAME)||'[]')}catch(e){return[]}
+  },
+  async add(nickname,score){
+    if(this.remote()){
+      const r=await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${CONFIG.TABLE}`,{method:'POST',headers:{...this.headers(),Prefer:'return=minimal'},body:JSON.stringify({game:CONFIG.GAME,nickname,score})});
+      if(!r.ok)throw new Error('add');
+      return;
+    }
+    let a=[];try{a=JSON.parse(localStorage.getItem('rank_'+CONFIG.GAME)||'[]')}catch(e){}
+    a.push({nickname,score});a.sort((x,y)=>y.score-x.score);
+    try{localStorage.setItem('rank_'+CONFIG.GAME,JSON.stringify(a.slice(0,20)))}catch(e){}
+  }
+};
+
+/* ===== 공통 ===== */
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id))}
+function ov(id){['ovStart','ovOver','ovRank'].forEach(o=>$(o).classList.toggle('on',o===id))}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+
+/* ===== 스택 타워 ===== */
+const W=360,H=560,BH=26,BASE=H-70,START_W=200;
+const cv=$('cv'),ctx=cv.getContext('2d');
+const dpr=Math.min(window.devicePixelRatio||1,2);
+cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
+let st=null,running=false,last=0,prevOv='ovStart',submitted=false;
+
+function reset(){
+  const hue=Math.random()*360;
+  st={stack:[{x:(W-START_W)/2,w:START_W,hue}],cur:null,pieces:[],score:0,combo:0,cam:0,camT:0,over:false,started:false,pop:null,hue};
+  spawn();
+}
+function spawn(){
+  const top=st.stack[st.stack.length-1];
+  st.cur={x:Math.random()<.5?0:W-top.w,w:top.w,dir:Math.random()<.5?1:-1,hue:(st.hue+st.stack.length*9)%360};
+}
+function drop(){
+  if(!st||!st.started||st.over)return;
+  const top=st.stack[st.stack.length-1],c=st.cur;
+  const l=Math.max(c.x,top.x),r=Math.min(c.x+c.w,top.x+top.w),ow=r-l;
+  const lvl=st.stack.length;
+  if(ow<=0){
+    st.pieces.push({x:c.x,w:c.w,lvl,fall:0,vy:0,hue:c.hue});
+    st.cur=null;endGame();return;
+  }
+  let nb;
+  if(Math.abs(c.x-top.x)<=5){
+    st.combo++;
+    let w=top.w;
+    if(st.combo>=3)w=Math.min(START_W,w+6);
+    nb={x:Math.max(0,Math.min(W-w,top.x-(w-top.w)/2)),w,hue:c.hue};
+    st.pop={text:st.combo>=3?'PERFECT x'+st.combo:'PERFECT',t:0};
+  }else{
+    st.combo=0;
+    nb={x:l,w:ow,hue:c.hue};
+    const cutL=c.x<top.x;
+    st.pieces.push({x:cutL?c.x:top.x+top.w,w:cutL?top.x-c.x:c.x+c.w-(top.x+top.w),lvl,fall:0,vy:0,hue:c.hue});
+  }
+  st.stack.push(nb);st.score++;
+  st.camT=Math.max(0,(st.stack.length-8)*BH);
+  spawn();
+}
+function endGame(){
+  st.over=true;
+  const best=Math.max(+store('stack_best')||0,st.score);store('stack_best',String(best));
+  setTimeout(()=>{
+    $('finalScore').textContent=st.score;
+    $('bestTxt').textContent='내 최고 기록 '+best;
+    $('nick').value=store('stack_nick')||'';
+    $('submitMsg').textContent='';
+    submitted=false;$('btnSubmit').disabled=false;$('btnSubmit').textContent='랭킹 등록';
+    $('btnSubmit').style.display=st.score>0?'':'none';$('nick').style.display=st.score>0?'':'none';
+    ov('ovOver');prevOv='ovOver';
+  },900);
+}
+function update(dt){
+  if(st.started&&!st.over&&st.cur){
+    const c=st.cur,sp=Math.min(130+st.score*6,400);
+    c.x+=c.dir*sp*dt;
+    if(c.x<=0){c.x=0;c.dir=1}
+    if(c.x>=W-c.w){c.x=W-c.w;c.dir=-1}
+  }
+  st.cam+=(st.camT-st.cam)*Math.min(1,dt*6);
+  st.pieces.forEach(p=>{p.vy+=1400*dt;p.fall+=p.vy*dt});
+  st.pieces=st.pieces.filter(p=>p.fall<H*1.5);
+  if(st.pop){st.pop.t+=dt;if(st.pop.t>.8)st.pop=null}
+}
+function block(x,lvl,w,hue,off){
+  const y=BASE-lvl*BH+st.cam+(off||0);
+  ctx.fillStyle=`hsl(${hue} 70% 58%)`;ctx.fillRect(x,y,w,BH);
+  ctx.fillStyle=`hsl(${hue} 80% 74%)`;ctx.fillRect(x,y,w,5);
+  ctx.fillStyle=`hsl(${hue} 60% 44%)`;ctx.fillRect(x,y+BH-3,w,3);
+}
+function draw(){
+  const h=(st.hue+st.score*3)%360;
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,`hsl(${h} 45% 20%)`);g.addColorStop(1,`hsl(${(h+40)%360} 55% 9%)`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(0,BASE+BH+st.cam,W,H);
+  st.stack.forEach((b,i)=>block(b.x,i,b.w,b.hue));
+  if(st.cur)block(st.cur.x,st.stack.length,st.cur.w,st.cur.hue);
+  st.pieces.forEach(p=>block(p.x,p.lvl,p.w,p.hue,p.fall));
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,.92)';ctx.font='900 56px system-ui,sans-serif';
+  ctx.fillText(st.score,W/2,80);
+  if(st.pop){
+    ctx.globalAlpha=1-st.pop.t/.8;ctx.fillStyle='#ffd166';ctx.font='900 22px system-ui,sans-serif';
+    ctx.fillText(st.pop.text,W/2,120-st.pop.t*30);ctx.globalAlpha=1;
+  }
+}
+function loop(t){
+  if(!running)return;
+  const dt=Math.min(.05,(t-last)/1000||0);last=t;
+  update(dt);draw();
+  requestAnimationFrame(loop);
+}
+function begin(){reset();running=true;last=performance.now();requestAnimationFrame(loop)}
+function startPlay(){reset();st.started=true;ov(null);prevOv=null}
+
+/* ===== 랭킹 UI ===== */
+async function showRank(from,me){
+  prevOv=from;ov('ovRank');
+  const list=$('rankList');list.replaceChildren();$('rankMsg').textContent='불러오는 중…';
+  try{
+    const rows=await Rank.list();
+    $('rankMsg').textContent=rows.length?(Rank.remote()?'':'이 기기에서만 보이는 랭킹이에요'):'아직 기록이 없어요. 첫 기록을 남겨보세요';
+    let marked=false;
+    rows.slice(0,20).forEach((r,i)=>{
+      const li=document.createElement('li');
+      if(me&&!marked&&r.nickname===me.nickname&&r.score===me.score){li.className='me';marked=true}
+      const n=document.createElement('span');n.className='n';n.textContent=i+1;
+      const k=document.createElement('span');k.className='nick';k.textContent=r.nickname;
+      const s=document.createElement('span');s.textContent=r.score;
+      li.append(n,k,s);list.append(li);
+    });
+  }catch(e){$('rankMsg').textContent='랭킹을 불러오지 못했어요. 잠시 후 다시 시도해주세요'}
+}
+
+/* ===== 이벤트 ===== */
+$('goStack').onclick=()=>{show('game');begin();ov('ovStart');prevOv='ovStart'};
+$('btnStart').onclick=startPlay;
+$('btnRetry').onclick=startPlay;
+$('btnHome1').onclick=$('btnHome2').onclick=()=>{running=false;show('hub')};
+$('btnRank1').onclick=()=>showRank('ovStart');
+$('btnRankBack').onclick=()=>ov(prevOv);
+$('btnSubmit').onclick=async()=>{
+  if(submitted)return;
+  const nickname=$('nick').value.trim().slice(0,10);
+  if(!nickname){$('submitMsg').textContent='닉네임을 입력해주세요';return}
+  $('btnSubmit').disabled=true;$('submitMsg').textContent='등록 중…';
+  try{
+    await Rank.add(nickname,st.score);
+    submitted=true;store('stack_nick',nickname);
+    showRank('ovOver',{nickname,score:st.score});
+    $('btnSubmit').textContent='등록 완료';
+  }catch(e){$('submitMsg').textContent='등록에 실패했어요. 다시 시도해주세요';$('btnSubmit').disabled=false}
+};
+$('wrap').addEventListener('pointerdown',e=>{if(e.target===cv)drop()});
+addEventListener('keydown',e=>{
+  if(e.code==='Space'&&$('game').classList.contains('active')&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='BUTTON'){e.preventDefault();drop()}
+});
+</script>
 </body>
 </html>
